@@ -2,6 +2,9 @@
 Ext.define('CustomApp', {
     extend: 'Rally.app.App',
     componentCls: 'app',
+    iterations:[],
+    iterationPageCounter:1,
+    pagesize:200,
     launch: function() {
         this._myMask = new Ext.LoadMask(Ext.getBody(), {msg:"Calculating...Please wait."});
         this._myMask.show();
@@ -22,11 +25,11 @@ Ext.define('CustomApp', {
         
         filters.push(dateFilter);
         console.log(filters.toString());
-        this.applyInitialFilterToIterations(filters);
+        this.applyInitialFilterToIterations(filters, 0);
         
     },
-    applyInitialFilterToIterations:function(filters){
-        var store = this.makeIterationStore();
+    applyInitialFilterToIterations:function(filters, start){
+        var store = this.makeIterationStore(start);
         var iterations = [];
         store.addFilter(filters);
         store.load({
@@ -35,10 +38,10 @@ Ext.define('CustomApp', {
                 if(operation.wasSuccessful()) {
                     if (records.length > 0) {
                         _.each(records, function(record){
-                            iterations.push(record.get('Name'));
+                            this.iterations.push(record.get('Name'));
                                 
                         },this);   
-                        this.getMaxNumberOfUniqueIterationNames(iterations);
+                        this.getMaxNumberOfUniqueIterationNames();
                     }
                     else{
                         console.log('no records!');
@@ -50,13 +53,15 @@ Ext.define('CustomApp', {
             }
         });
     },
-    makeIterationStore:function(){
+    makeIterationStore:function(start){
         var dataScope = this.getContext().getDataContext();
         var store = Ext.create('Rally.data.wsapi.Store',{
             model: 'Iteration',
             fetch: ['ObjectID','Name','StartDate','EndDate','PlanEstimate'],
             context: dataScope,
-            limit: Infinity,
+            pagesize: this.pagesize,
+            limit:1,
+            start: start,
             sorters:[{
                 property:'EndDate',
                 direction: 'DESC'
@@ -65,23 +70,31 @@ Ext.define('CustomApp', {
         return store;
     },
     
-    getMaxNumberOfUniqueIterationNames:function(iterations){
+    getMaxNumberOfUniqueIterationNames:function(){
+        console.log('all iteratons', this.iterations.length, this.iterations);
         var max = 10;
-        iterations = _.uniq(iterations);
-        if (iterations.length > 10) {
-            iterations = iterations.slice(0,10);
+        this.iterationPageCounter += this.pagesize;
+        console.log('this.iterationPageCounter',this.iterationPageCounter);
+        this.iterations = _.uniq(this.iterations);
+        if (this.iterations.length > 10) {
+            this.iterations = this.iterations.slice(0,10);
         }
-        iterations.reverse();
-        console.log('unique iteratons', iterations);
-        this.makeFiltersForArtifacts(iterations);
+        this.iterations.reverse();
+        console.log('unique iteratons', this.iterations);
         
+        if (this.iterations.length < max) {
+            this.applyInitialFilterToIterations(this.iterationPageCounter);
+        }
+        else{
+            this.makeFiltersForArtifacts();
+        }
     },
     
     
-    makeFiltersForArtifacts:function(iterations){
-        console.log("iterations: ", iterations.length, iterations);
+    makeFiltersForArtifacts:function(){
+        console.log("iterations: ", this.iterations.length, this.iterations);
         var iterationFilters = [];
-        _.each(iterations, function(iteration){
+        _.each(this.iterations, function(iteration){
             var filter = Ext.create('Rally.data.wsapi.Filter', {
                 property: 'Iteration.Name',
                 value: iteration
@@ -210,7 +223,7 @@ Ext.define('CustomApp', {
                 xAxis: {
                     title: {
                         text: 'Iterations'
-                    },
+                    }
                 },
                 yAxis:{
                     title: {
