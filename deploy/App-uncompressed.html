@@ -15,6 +15,14 @@ Ext.define('CustomApp', {
     iterationPageCounter:1,
     filters:[],
     pagesize:200,
+    items:[{
+        xtype:'container',
+        itemId:'stats',
+        margin: 10
+    },{    
+        xtype:'container',
+        itemId:'chart'
+    }],
     launch: function() {
         this._myMask = new Ext.LoadMask(Ext.getBody(), {msg:"Calculating...Please wait."});
         this._myMask.show();
@@ -221,8 +229,49 @@ Ext.define('CustomApp', {
         this.makeChart(series, categories);
     },
     makeChart:function(series, categories){
+        var few = 3;
+        var numOfIterations = series[2].data.length;
+        var combinedAccepted = [];
+        var lastFewAccepted = [];
+        var bestFewAccepted = [];
+        var worstFewAccepted = [];
+        var avgLast = 0;
+        var avgBest = 0;
+        var avgWorst = 0;
+        var totalLast = 0;
+        var totalBest = 0;
+        var totalWorst = 0;
+        
+        
+        for(var i=0; i<numOfIterations; i++){
+            var sum = series[1].data[i] + series[2].data[i];
+            combinedAccepted.push(sum);
+        }
+        
+        //console.log('combinedAccepted',combinedAccepted);
+        
+        lastFewAccepted = _.last(combinedAccepted, few);
+        bestFewAccepted = _.last(combinedAccepted.sort(function(a, b){return a-b;}),few);
+        worstFewAccepted = _.last(combinedAccepted.sort(function(a, b){return b-a;}),few);
+        
+        //console.log('lastFewAccepted', lastFewAccepted);
+        //console.log('bestFewAccepted', bestFewAccepted);
+        //console.log('worstFewAccepted', worstFewAccepted);
+        
+        _.each(lastFewAccepted, function(element){totalLast += element;});
+        _.each(bestFewAccepted, function(element){totalBest += element;});
+        _.each(worstFewAccepted, function(element){totalWorst += element;});
+        
+        avgLast = parseFloat((parseFloat(totalLast/few)).toFixed(2));
+        avgBest = parseFloat((parseFloat(totalBest/few)).toFixed(2));
+        avgWorst = parseFloat((parseFloat(totalWorst/few)).toFixed(2));
+        
+        
+        Ext.ComponentQuery.query('container[itemId=stats]')[0].update('Average accepted for last 3 iterations: ' + avgLast +  '</br>' +
+                                   'Average accepted for best 3 iterations: ' +  avgBest + '</br>' +
+                                   'Average accepted for worst 3 iterations: '  +  avgWorst + '</br>');
         this._myMask.hide();
-        this.add({
+        this.down('#chart').add({
             xtype: 'rallychart',
             chartConfig: {
                 chart:{
@@ -233,6 +282,7 @@ Ext.define('CustomApp', {
                     text: 'Velocity Chart'
                 },
                 //colors: ['#87CEEB', '#8FBC8F', '#008080'],
+                //chartColors: ['#87CEEB', '#8FBC8F', '#008080'],
                 xAxis: {
                     title: {
                         text: 'Iterations'
