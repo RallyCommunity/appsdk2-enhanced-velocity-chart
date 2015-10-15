@@ -9,6 +9,7 @@ It is a variation of the legacy [Enhanced Velocity Chart.](https://github.com/Ra
 ![](pic0.png)
 
 A WS API endpoint scoped to a project can be used to confirm PlanEstimate values returned by the app:
+
 https://rally1.rallydev.com/slm/webservice/v2.0/iteration?project=https://rally1.rallydev.com/slm/webservice/v2.0/project/123&query=(Name = "Your Iteration Name")&fetch=PlanEstimate
 
 
