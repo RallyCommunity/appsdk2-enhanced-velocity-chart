@@ -12,6 +12,8 @@ A WS API endpoint scoped to a project can be used to confirm PlanEstimate values
 
 https://rally1.rallydev.com/slm/webservice/v2.0/iteration?project=https://rally1.rallydev.com/slm/webservice/v2.0/project/123&query=(Name = "Your Iteration Name")&fetch=PlanEstimate
 
+The app excludes iterations with no stories, defects or defect suites scheduled.
+
 This app is vailable AS IS. It is NOT supported by Rally.
 ## License
 
