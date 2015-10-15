@@ -225,9 +225,9 @@ Ext.define('CustomApp', {
         var accepted = [];
         var numOfIterations = categories.length;
         //var combinedAccepted = [];
-        //var lastFewAccepted = [];
-        //var bestFewAccepted = [];
-        //var worstFewAccepted = [];
+        var lastFewAccepted = [];
+        var bestFewAccepted = [];
+        var worstFewAccepted = [];
         
         //var lastFewAcceptedCombined = [];
         //var bestFewAcceptedCombined = [];
@@ -247,11 +247,11 @@ Ext.define('CustomApp', {
         //var totalBestCombined = 0;
         //var totalWorstCombined = 0;
         
-        //for(var i=0; i<numOfIterations; i++){
-        //    var sum = series[1].data[i] + series[2].data[i];
-        //    accepted.push(series[2].data[i]);
-        //    combinedAccepted.push(sum);
-        //}
+        for(var i=0; i<numOfIterations; i++){
+            //var sum = series[1].data[i] + series[2].data[i];
+            accepted.push(series[2].data[i]);
+            //combinedAccepted.push(sum);
+        }
         
         var yValues = series[2].data;
         var xValues = [];
@@ -280,6 +280,8 @@ Ext.define('CustomApp', {
         //lastFewAcceptedCombined = _.last(combinedAccepted, few);
         //bestFewAcceptedCombined = _.last(combinedAccepted.sort(function(a, b){return a-b;}),few);
         //worstFewAcceptedCombined = _.last(combinedAccepted.sort(function(a, b){return b-a;}),few);
+        
+        
         
         lastFewAccepted = _.last(accepted, few);
         bestFewAccepted = _.last(accepted.sort(function(a, b){return a-b;}),few);
