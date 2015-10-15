@@ -8,10 +8,6 @@ Ext.define('CustomApp', {
     pagesize:200,
     items:[{
         xtype:'container',
-        itemId:'statsCombined',
-        margin: 10
-    },{
-        xtype:'container',
         itemId:'stats',
         margin: 10
     },{    
@@ -224,14 +220,9 @@ Ext.define('CustomApp', {
         var few = 3;
         var accepted = [];
         var numOfIterations = categories.length;
-        //var combinedAccepted = [];
         var lastFewAccepted = [];
         var bestFewAccepted = [];
         var worstFewAccepted = [];
-        
-        //var lastFewAcceptedCombined = [];
-        //var bestFewAcceptedCombined = [];
-        //var worstFewAcceptedCombined = [];
         
         var avgLast = 0;
         var avgBest = 0;
@@ -240,17 +231,9 @@ Ext.define('CustomApp', {
         var totalBest = 0;
         var totalWorst = 0;
         
-        //var avgLastCombined = 0;
-        //var avgBestCombined = 0;
-        //var avgWorstCombined = 0;
-        //var totalLastCombined = 0;
-        //var totalBestCombined = 0;
-        //var totalWorstCombined = 0;
         
         for(var i=0; i<numOfIterations; i++){
-            //var sum = series[1].data[i] + series[2].data[i];
             accepted.push(series[2].data[i]);
-            //combinedAccepted.push(sum);
         }
         
         var yValues = series[2].data;
@@ -260,8 +243,6 @@ Ext.define('CustomApp', {
         }
         
         var lr = this.calculateTrend(yValues, xValues);
-        
-        //console.log('lr', lr);
         var minX = 0;
         var maxX = categories.length-1;
         
@@ -274,30 +255,9 @@ Ext.define('CustomApp', {
             enableMouseTracking: false
         });
         
-        //console.log('combinedAccepted',combinedAccepted);
-        //console.log('accepted', accepted);
-        
-        //lastFewAcceptedCombined = _.last(combinedAccepted, few);
-        //bestFewAcceptedCombined = _.last(combinedAccepted.sort(function(a, b){return a-b;}),few);
-        //worstFewAcceptedCombined = _.last(combinedAccepted.sort(function(a, b){return b-a;}),few);
-        
-        
-        
         lastFewAccepted = _.last(accepted, few);
         bestFewAccepted = _.last(accepted.sort(function(a, b){return a-b;}),few);
         worstFewAccepted = _.last(accepted.sort(function(a, b){return b-a;}),few);
-        
-        //console.log('lastFewAccepted', lastFewAccepted);
-        //console.log('bestFewAccepted', bestFewAccepted);
-        //console.log('worstFewAccepted', worstFewAccepted);
-        
-        //_.each(lastFewAcceptedCombined, function(element){totalLastCombined += element;});
-        //_.each(bestFewAcceptedCombined, function(element){totalBestCombined += element;});
-        //_.each(worstFewAcceptedCombined, function(element){totalWorstCombined += element;});
-        
-        //avgLastCombined = parseFloat((parseFloat(totalLastCombined/few)).toFixed(2));
-        //avgBestCombined = parseFloat((parseFloat(totalBestCombined/few)).toFixed(2));
-        //avgWorstCombined = parseFloat((parseFloat(totalWorstCombined/few)).toFixed(2));
         
         _.each(lastFewAccepted, function(element){totalLast += element;});
         _.each(bestFewAccepted, function(element){totalBest += element;});
@@ -308,9 +268,6 @@ Ext.define('CustomApp', {
         avgWorst = parseFloat((parseFloat(totalWorst/few)).toFixed(2));
         
         
-        //Ext.ComponentQuery.query('container[itemId=statsCombined]')[0].update('Average accepted during and after iteration for last 3 iterations: ' + avgLastCombined +  '</br>' +
-        //                           'Average accepted during and after iteration for best 3 iterations: ' +  avgBestCombined + '</br>' +
-        //                           'Average accepted during and after iteration for worst 3 iterations: '  +  avgWorstCombined + '</br>');
         
         Ext.ComponentQuery.query('container[itemId=stats]')[0].update('Average accepted during iteration for last 3 iterations: ' + avgLast +  '</br>' +
                                    'Average accepted during iteration for best 3 iterations: ' +  avgBest + '</br>' +
