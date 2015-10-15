@@ -54,10 +54,12 @@ Ext.define('CustomApp', {
                     }
                     else{
                         //console.log('no records!');
+                        this.showNoDataBox();
+                        
                     }
                 }
                 else{
-                    //console.log('oh,noes!');
+                    console.log('oh,noes!');
                 }
             }
         });
@@ -167,54 +169,60 @@ Ext.define('CustomApp', {
     },
     prepareChart:function(){
         //console.log('artifacts', this.artifacts);
-        var series = [];
-        var categories = [];
-        var acceptedDuringIteration = [];
-        var acceptedAfterIteration = [];
-        var notAccepted = [];
-        this.artifacts = _.filter(this.artifacts,function(artifactsPerIterationName){
-            return artifactsPerIterationName.length !== 0;
-        });
-        //console.log('filtered artifacts', this.artifacts);
-        _.each(this.artifacts, function(artifactsPerIterationName){
-            var pointsAcceptedDuringIteration = 0;
-            var pointsAcceptedAfterIteration = 0;
-            var pointsNotAccepted = 0;
-            var data = [];
-            var name = artifactsPerIterationName[0].IterationName;
-            categories.push(name);
-            _.each(artifactsPerIterationName, function(artifact){
-                if (artifact.AcceptedDate === null) {
-                    pointsNotAccepted += artifact.PlanEstimate;
-                }
-                else{
-                    if ((artifact.AcceptedDate >= artifact.IterationStartDate) && (artifact.AcceptedDate <= artifact.IterationEndDate)) {
-                        pointsAcceptedDuringIteration += artifact.PlanEstimate;
+        if (this.artifacts.length > 0) {
+            var series = [];
+            var categories = [];
+            var acceptedDuringIteration = [];
+            var acceptedAfterIteration = [];
+            var notAccepted = [];
+            this.artifacts = _.filter(this.artifacts,function(artifactsPerIterationName){
+                return artifactsPerIterationName.length !== 0;
+            });
+            //console.log('filtered artifacts', this.artifacts);
+            _.each(this.artifacts, function(artifactsPerIterationName){
+                var pointsAcceptedDuringIteration = 0;
+                var pointsAcceptedAfterIteration = 0;
+                var pointsNotAccepted = 0;
+                var data = [];
+                var name = artifactsPerIterationName[0].IterationName;
+                categories.push(name);
+                _.each(artifactsPerIterationName, function(artifact){
+                    if (artifact.AcceptedDate === null) {
+                        pointsNotAccepted += artifact.PlanEstimate;
                     }
                     else{
-                        pointsAcceptedAfterIteration += artifact.PlanEstimate;
+                        if ((artifact.AcceptedDate >= artifact.IterationStartDate) && (artifact.AcceptedDate <= artifact.IterationEndDate)) {
+                            pointsAcceptedDuringIteration += artifact.PlanEstimate;
+                        }
+                        else{
+                            pointsAcceptedAfterIteration += artifact.PlanEstimate;
+                        }
                     }
-                }
+                });
+                acceptedDuringIteration.push(pointsAcceptedDuringIteration);
+                acceptedAfterIteration.push(pointsAcceptedAfterIteration);
+                notAccepted.push(pointsNotAccepted);
+            },this);
+            series.push({
+                name : 'Not Accepted',
+                data : notAccepted
             });
-            acceptedDuringIteration.push(pointsAcceptedDuringIteration);
-            acceptedAfterIteration.push(pointsAcceptedAfterIteration);
-            notAccepted.push(pointsNotAccepted);
-        },this);
-        series.push({
-            name : 'Not Accepted',
-            data : notAccepted
-        });
-        series.push({
-            name : 'Accepted After Iteration',
-            data : acceptedAfterIteration
-        });
-        series.push({
-            name : 'Accepted During Iteration',
-            data : acceptedDuringIteration
-        });
+            series.push({
+                name : 'Accepted After Iteration',
+                data : acceptedAfterIteration
+            });
+            series.push({
+                name : 'Accepted During Iteration',
+                data : acceptedDuringIteration
+            });
+            
+            //console.log('series', series);
+            this.makeChart(series, categories);
+        }
+        else{
+            this.showNoDataBox();
+        }
         
-        //console.log('series', series);
-        this.makeChart(series, categories);
     },
     makeChart:function(series, categories){
         var few = 3;
@@ -335,5 +343,10 @@ Ext.define('CustomApp', {
         lr.r2 = Math.pow((n*sum_xy - sum_x*sum_y)/Math.sqrt((n*sum_xx-sum_x*sum_x)*(n*sum_yy-sum_y*sum_y)),2);
         
         return lr;
+    },
+    
+    showNoDataBox:function(){
+        this._myMask.hide();
+        Ext.ComponentQuery.query('container[itemId=stats]')[0].update('There is no data. </br>Check if there are interations in scope and work items with PlanEstimate assigned for iterations');
     }
 });
