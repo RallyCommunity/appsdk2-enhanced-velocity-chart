@@ -40,11 +40,12 @@ Ext.define('CustomApp', {
     applyInitialFilterToIterations:function(){
         var store = this.makeIterationStore();
         var iterations = [];
-        store.addFilter(this.filters);
+        store.addFilter(this.filters,false);
         store.loadPage(this.iterationPageCounter, {
             scope: this,
             callback: function(records, operation) {
                 if(operation.wasSuccessful()) {
+                    //console.log('records', records.length, records);
                     if (records.length > 0) {
                         _.each(records, function(record){
                             this.iterations.push(record.get('Name'));
@@ -52,10 +53,13 @@ Ext.define('CustomApp', {
                         },this);   
                         this.getMaxNumberOfUniqueIterationNames();
                     }
-                    else{
-                        //console.log('no records!');
+                    else if(records.length === 0 && this.iterations.length === 0){
+                        console.log('no records!');
                         this.showNoDataBox();
                         
+                    }
+                    else{
+                        this.makeFiltersForArtifacts();
                     }
                 }
                 else{
@@ -81,29 +85,30 @@ Ext.define('CustomApp', {
     },
     
     getMaxNumberOfUniqueIterationNames:function(){
-        //console.log('all iteratons', this.iterations.length, this.iterations);
+        console.log('all iteratons', this.iterations.length, this.iterations);
         var max = 10;
         this.iterationPageCounter++;
-        //console.log('this.iterationPageCounter',this.iterationPageCounter); 
+        console.log('this.iterationPageCounter',this.iterationPageCounter); 
         this.iterations = _.uniq(this.iterations);
-        if (this.iterations.length > 10) {
+        if (this.iterations.length > max) {
             this.iterations = this.iterations.slice(0,10);
         }
-        //console.log('unique iteratons', this.iterations);
+        console.log('unique iteratons', this.iterations);
         
         if (this.iterations.length < max) {
             //console.log('this.iterations.length < max'); 
             this.applyInitialFilterToIterations();
         }
         else{
-            //console.log('makeFiltersForArtifacts()');
-            this.iterations.reverse();
+            console.log('makeFiltersForArtifacts()');
+            //this.iterations.reverse();
             this.makeFiltersForArtifacts();
         }
     },
     
     
     makeFiltersForArtifacts:function(){
+        this.iterations.reverse();
         //console.log("iterations: ", this.iterations.length, this.iterations);
         var iterationFilters = [];
         _.each(this.iterations, function(iteration){
@@ -111,7 +116,7 @@ Ext.define('CustomApp', {
                 property: 'Iteration.Name',
                 value: iteration
             });
-            //console.log(filter.toString());
+            console.log(filter.toString());
             iterationFilters.push(filter);
             
         });
@@ -134,7 +139,7 @@ Ext.define('CustomApp', {
     },
     
     applyIterationFiltersToArtifactStore:function(i){
-        this.artifactStore.addFilter(this.iterationFilters[i]);
+        this.artifactStore.addFilter(this.iterationFilters[i],false);
         this.artifactStore.load({
             scope: this,
             callback: function(records, operation) {
@@ -173,7 +178,7 @@ Ext.define('CustomApp', {
             var series = [];
             var categories = [];
             var acceptedDuringIteration = [];
-            var acceptedAfterIteration = [];
+            var acceptedOutsideIteration = [];
             var notAccepted = [];
             this.artifacts = _.filter(this.artifacts,function(artifactsPerIterationName){
                 return artifactsPerIterationName.length !== 0;
@@ -181,7 +186,7 @@ Ext.define('CustomApp', {
             //console.log('filtered artifacts', this.artifacts);
             _.each(this.artifacts, function(artifactsPerIterationName){
                 var pointsAcceptedDuringIteration = 0;
-                var pointsAcceptedAfterIteration = 0;
+                var pointsAcceptedOutsideIteration = 0;
                 var pointsNotAccepted = 0;
                 var data = [];
                 var name = artifactsPerIterationName[0].IterationName;
@@ -195,12 +200,12 @@ Ext.define('CustomApp', {
                             pointsAcceptedDuringIteration += artifact.PlanEstimate;
                         }
                         else{
-                            pointsAcceptedAfterIteration += artifact.PlanEstimate;
+                            pointsAcceptedOutsideIteration += artifact.PlanEstimate;
                         }
                     }
                 });
                 acceptedDuringIteration.push(pointsAcceptedDuringIteration);
-                acceptedAfterIteration.push(pointsAcceptedAfterIteration);
+                acceptedOutsideIteration.push(pointsAcceptedOutsideIteration);
                 notAccepted.push(pointsNotAccepted);
             },this);
             series.push({
@@ -208,8 +213,8 @@ Ext.define('CustomApp', {
                 data : notAccepted
             });
             series.push({
-                name : 'Accepted After Iteration',
-                data : acceptedAfterIteration
+                name : 'Accepted Outside Iteration',
+                data : acceptedOutsideIteration
             });
             series.push({
                 name : 'Accepted During Iteration',

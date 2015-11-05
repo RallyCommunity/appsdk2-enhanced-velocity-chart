@@ -14,6 +14,11 @@ https://rally1.rallydev.com/slm/webservice/v2.0/iteration?project=https://rally1
 
 The app excludes iterations with no stories, defects or defect suites scheduled.
 
+Items accepted before or after iterations are not included in the calculation of trend line or in the calculations of averages for the last, best and worst iterations.
+Note that the legacy app considered items accepted before iteration as accepted during iteration. This app does not have a separate series for items accepted after iteration.
+It includes items accepted before and after iteration in the AcceptedOutsideIteration series.
+
+
 This app is vailable AS IS. It is NOT supported by Rally.
 ## License
 
